@@ -1,0 +1,24 @@
+{
+  "name": "newwork",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "format": "prettier --plugin-search-dir  --write ."
+  },
+  "devDependencies": {
+    "@sveltejs/kit": "^1.20.0",
+    "@sveltejs/vite-plugin-svelte": "^2.0.4",
+    "prettier": "^2.8.8",
+    "prettier-plugin-svelte": "^2.10.1",
+    "svelte": "^3.58.0",
+    "vanillajs-datepicker": "^1.3.2",
+    "vite": "^4.3.9"
+  },
+  "dependencies": {
+    "bootstrap": "^5.2.3"
+  }
+}
