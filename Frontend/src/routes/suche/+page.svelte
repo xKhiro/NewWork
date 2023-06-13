@@ -3,6 +3,7 @@
   import { convertGermanDateToISO } from '../../lib/dateutils';
   import Toast from '../../components/Toast.svelte';
   import { showToast } from '../../lib/toast';
+  import user from '../../lib/user';
 
   let filteredWorkspaces = [];
   let selectedDate;
@@ -62,7 +63,7 @@
   async function createBooking(ws) {
     try {
       //TODO: Add personId
-      const res = await fetch('http://localhost:8000/users/1/bookings', {
+      const res = await fetch(`http://localhost:8000/users/${$user.personId}/bookings`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',

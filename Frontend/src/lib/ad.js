@@ -1,4 +1,4 @@
-const persons = [
+const users = [
   {
     personId: '1',
     name: 'admin',
@@ -13,6 +13,6 @@ const persons = [
   },
 ];
 
-export function getPerson(personId) {
-  return persons.find((p) => p.personId === personId);
+export function getUser(username, password) {
+  return users.find((u) => u.name == username && u.password == password);
 }

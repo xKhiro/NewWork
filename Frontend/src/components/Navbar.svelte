@@ -1,5 +1,11 @@
 <script>
+  import user from '../lib/user';
+
   export let currentPage;
+
+  function logout() {
+    user.update((u) => (u = null));
+  }
 </script>
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
@@ -25,15 +31,16 @@
           <a class="nav-link {currentPage === '/suche' ? 'active text-decoration-underline' : ''}" href="/suche"
             >Suche</a>
         </li>
-        <!-- TODO: Hide admin by role -->
-        <li class="nav-item">
-          <a class="nav-link {currentPage === '/admin' ? 'active text-decoration-underline' : ''}" href="/admin"
-            >Admin</a>
-        </li>
+        {#if !!$user && $user.role === 'admin'}
+          <li class="nav-item">
+            <a class="nav-link {currentPage === '/admin' ? 'active text-decoration-underline' : ''}" href="/admin"
+              >Admin</a>
+          </li>
+        {/if}
       </ul>
       <ul class="navbar-nav mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="/">Abmelden</a>
+          <a class="nav-link" href="/" on:click={logout}>Abmelden</a>
         </li>
       </ul>
     </div>
