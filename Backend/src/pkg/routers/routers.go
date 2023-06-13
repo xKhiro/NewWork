@@ -4,6 +4,7 @@ import (
 	"NewWork/pkg/handlers"
 	"NewWork/pkg/model"
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -11,22 +12,21 @@ import (
 )
 
 type Router struct {
-	workspaceHandler *handlers.WorkspaceHandler
-	bookingHandler   *handlers.BookingHandler
+	handler *handlers.Handler
 }
 
 func NewRouter() *Router {
-	workspaceHandler := handlers.NewWorkspaceHandler()
-	bookingHandler := handlers.NewBookingHandler()
+	workspaceHandler := handlers.NewHandler()
 
 	return &Router{
-		workspaceHandler: workspaceHandler,
-		bookingHandler:   bookingHandler,
+		handler: workspaceHandler,
 	}
 }
 
 func (r *Router) GetWorkspaces(w http.ResponseWriter, req *http.Request) {
-	params := model.GetWorkspacesParams{
+
+	log.Print("Router GetWorkspaces")
+	params := model.WorkspaceFilter{
 		Date:              req.URL.Query().Get("date"),
 		Booked:            req.URL.Query().Get("booked"),
 		HasDockingStation: req.URL.Query().Get("hasDockingStation"),
@@ -35,7 +35,7 @@ func (r *Router) GetWorkspaces(w http.ResponseWriter, req *http.Request) {
 		RoomId:            req.URL.Query().Get("roomId"),
 		WorkspaceId:       req.URL.Query().Get("workspaceId"),
 	}
-	workspaces := r.workspaceHandler.GetWorkspaces(params)
+	workspaces := r.handler.GetWorkspaces(params)
 	json.NewEncoder(w).Encode(workspaces)
 }
 
@@ -43,7 +43,7 @@ func (r *Router) GetBookings(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	personId := vars["personId"]
 
-	bookings := r.bookingHandler.GetBookings(personId)
+	bookings := r.handler.GetBookings(personId)
 
 	json.NewEncoder(w).Encode(bookings)
 }
@@ -52,10 +52,10 @@ func (r *Router) CreateBooking(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	personId := vars["personId"]
 
-	var booking model.Booking
+	var booking model.BookingDTO
 	_ = json.NewDecoder(req.Body).Decode(&booking)
 
-	newBooking := r.bookingHandler.CreateBooking(personId, booking)
+	newBooking := r.handler.CreateBooking(personId, booking)
 
 	json.NewEncoder(w).Encode(newBooking)
 }
@@ -71,7 +71,7 @@ func (r *Router) CancelBooking(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = r.bookingHandler.CancelBooking(personId, bokkingId)
+	err = r.handler.CancelBooking(personId, bokkingId)
 	if err != nil {
 		return
 	}

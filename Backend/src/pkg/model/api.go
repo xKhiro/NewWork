@@ -1,6 +1,6 @@
 package model
 
-type Booking struct {
+type BookingDTO struct {
 	BookingId   int    `json:"bookingId"`
 	PersonId    string `json:"personId"`
 	WorkspaceId int    `json:"workspaceId"`
@@ -8,14 +8,14 @@ type Booking struct {
 	Date        string `json:"date"`
 }
 
-type Workspace struct {
-	WorkspaceId       int       `json:"workspaceId"`
-	Name              string    `json:"name"`
-	HasDockingStation bool      `json:"hasDockingStation"`
-	HasAdjustableDesk bool      `json:"hasAdjustableDesk"`
-	HasTwoScreens     bool      `json:"hasTwoScreens"`
-	RoomName          string    `json:"roomName"`
-	Bookings          []Booking `json:"bookings"`
+type WorkspaceDTO struct {
+	WorkspaceId       int          `json:"workspaceId"`
+	Name              string       `json:"name"`
+	HasDockingStation bool         `json:"hasDockingStation"`
+	HasAdjustableDesk bool         `json:"hasAdjustableDesk"`
+	HasTwoScreens     bool         `json:"hasTwoScreens"`
+	RoomName          string       `json:"roomName"`
+	Bookings          []BookingDTO `json:"bookings"`
 }
 
 type Error struct {
@@ -23,7 +23,7 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-type GetWorkspacesParams struct {
+type WorkspaceFilter struct {
 	Date              string
 	Booked            string
 	HasDockingStation string

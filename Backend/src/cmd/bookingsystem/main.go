@@ -9,9 +9,13 @@ import (
 )
 
 func main() {
+
+	log.Println("Start server")
 	router := mux.NewRouter()
 
 	myRouter := routers.NewRouter()
+
+	log.Println(router)
 
 	router.HandleFunc("/workspaces", myRouter.GetWorkspaces).Methods("GET")
 	router.HandleFunc("/users/{personId}/bookings", myRouter.GetBookings).Methods("GET")
