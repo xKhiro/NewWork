@@ -7,11 +7,11 @@
   $: isLoggedIn = $user === null ? false : true;
 </script>
 
-<div class="container">
-  {#if isLoggedIn}
+{#if isLoggedIn}
+  <div class="container">
     <Navbar currentPage={$page.route.id} />
     <slot />
-  {:else}
-    <Login />
-  {/if}
-</div>
+  </div>
+{:else}
+  <Login />
+{/if}
