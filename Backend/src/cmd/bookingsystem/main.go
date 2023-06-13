@@ -19,7 +19,7 @@ func main() {
 
 	router.HandleFunc("/workspaces", myRouter.GetWorkspaces).Methods("GET")
 	router.HandleFunc("/users/{personId}/bookings", myRouter.GetBookings).Methods("GET")
-	router.HandleFunc("/users/{personId}/bookings", myRouter.CreateBooking).Methods("POST")
+	router.HandleFunc("/users/{personId}/bookings", myRouter.CreateBooking).Methods("POST", "OPTIONS")
 	router.HandleFunc("/users/{personId}/bookings/{bookingId}", myRouter.CancelBooking).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
