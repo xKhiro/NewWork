@@ -2,31 +2,32 @@ package model
 
 import (
 	"github.com/jinzhu/gorm"
+	"time"
 )
+
+type Room struct {
+	gorm.Model
+	RoomId     int
+	Name       string
+	MaxSeats   int
+	Workspaces []Workspace `gorm:"foreignkey:RoomId"`
+}
 
 type Workspace struct {
 	gorm.Model
-	RoomID   int
-	Name     string
-	MaxSeats int
-	Desks    []Desk `gorm:"foreignkey:RoomID"`
-}
-
-type Desk struct {
-	gorm.Model
-	DeskID                int
-	RoomID                int
+	WorkspaceId           int
+	RoomId                int
 	Name                  string
 	DockingStationPresent bool
 	AdjustableDeskPresent bool
 	NumberOfMonitors      int
-	Bookings              []Booking `gorm:"foreignkey:DeskID"`
+	Bookings              []Booking `gorm:"foreignkey:WorkspaceId"`
 }
 
 type Booking struct {
 	gorm.Model
-	BookingID int
-	DeskID    int
-	PersonID  string
-	Date      string
+	BookingId   int
+	WorkspaceId int
+	PersonId    string
+	Date        time.Time
 }

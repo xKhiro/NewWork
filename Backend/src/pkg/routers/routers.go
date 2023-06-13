@@ -16,6 +16,8 @@ type Router struct {
 }
 
 func NewRouter() *Router {
+	log.Println("New Router")
+
 	workspaceHandler := handlers.NewHandler()
 
 	return &Router{
@@ -25,7 +27,7 @@ func NewRouter() *Router {
 
 func (r *Router) GetWorkspaces(w http.ResponseWriter, req *http.Request) {
 
-	log.Print("Router GetWorkspaces")
+	log.Println("Router GetWorkspaces")
 	params := model.WorkspaceFilter{
 		Date:              req.URL.Query().Get("date"),
 		Booked:            req.URL.Query().Get("booked"),

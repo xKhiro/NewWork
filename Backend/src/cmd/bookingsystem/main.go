@@ -15,8 +15,6 @@ func main() {
 
 	myRouter := routers.NewRouter()
 
-	log.Println(router)
-
 	router.HandleFunc("/workspaces", myRouter.GetWorkspaces).Methods("GET")
 	router.HandleFunc("/users/{personId}/bookings", myRouter.GetBookings).Methods("GET")
 	router.HandleFunc("/users/{personId}/bookings", myRouter.CreateBooking).Methods("POST")
