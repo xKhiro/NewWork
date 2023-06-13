@@ -4,8 +4,6 @@ import (
 	"NewWork/pkg/model"
 	"NewWork/pkg/storge/mysql"
 	"context"
-	"fmt"
-	"github.com/jinzhu/gorm"
 	"log"
 	"time"
 )
@@ -31,7 +29,9 @@ func (h *Handler) GetWorkspaces(params model.WorkspaceFilter) []model.WorkspaceD
 
 	log.Println("Workspaces: ", workspaces)
 
-	return nil
+	dto := MapWorkspacesToDTO(workspaces)
+
+	return dto
 }
 
 func (h *Handler) GetBookings(personId string) []model.BookingDTO {
@@ -46,22 +46,55 @@ func (h *Handler) GetBookings(personId string) []model.BookingDTO {
 
 	log.Println("Bookings: ", bookings)
 
-	bookingDTO := mapBookingsToBookingDTO(bookings)
+	bookingDTO := h.mapBookingsToBookingDTO(bookings)
 
 	return bookingDTO
 }
 
-func mapBookingsToBookingDTO(bookings []model.Booking) []model.BookingDTO {
+func (h *Handler) CreateBooking(personId string, newBooking model.BookingDTO) model.Error {
+
+	log.Print("CreateBooking for personId: ", personId, newBooking)
+
+	booking, err := MapToBooking(newBooking)
+	if err != nil {
+		log.Panicln("Error: ", err)
+		return model.Error{
+			Code:    500,
+			Message: "Internal Error",
+		}
+	}
+
+	log.Println("New Booking: ", booking)
+	error := h.storage.CreateBooking(context.TODO(), booking)
+
+	return error
+}
+
+func (h *Handler) CancelBooking(personId string, bookingId int) error {
+
+	err := h.storage.DeleteBooking(context.Background(), bookingId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Handler) mapBookingsToBookingDTO(bookings []model.Booking) []model.BookingDTO {
 
 	var bookingsDTO []model.BookingDTO
 
 	for _, booking := range bookings {
+		workspace, err := h.storage.GetWorkspace(context.Background(), booking.WorkspaceId)
+		if err != nil {
+			log.Panicln("Get Workspace Error")
+		}
 		bookingDTO := model.BookingDTO{
-			BookingId:   booking.BookingId,
+			BookingId:   int(booking.ID),
 			PersonId:    booking.PersonId,
 			WorkspaceId: booking.WorkspaceId,
-			RoomName:    "Romm1",
-			Date:        booking.Date.String(),
+			RoomName:    checkroomID(workspace.RoomId),
+			Date:        booking.Date.Format("2006-01-02"),
 		}
 
 		bookingsDTO = append(bookingsDTO, bookingDTO)
@@ -71,43 +104,70 @@ func mapBookingsToBookingDTO(bookings []model.Booking) []model.BookingDTO {
 
 }
 
-func (h *Handler) CreateBooking(personId string, newBooking model.BookingDTO) error {
-
-	log.Print("CreateBooking for personId: ", personId)
-
-	booking, err := MapToBooking(newBooking)
-	if err != nil {
-		log.Panicln("Error: ", err)
-		return err
-	}
-
-	log.Println("New Booking: ", booking)
-	err = h.storage.CreateBooking(context.TODO(), booking)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (h *Handler) CancelBooking(personId string, bookingId int) error {
-	// Hier können Sie die Logik hinzufügen, um eine Buchung zu stornieren
-	return nil
-}
-
 func MapToBooking(dto model.BookingDTO) (model.Booking, error) {
-	layout := "2006-01-02" // This is the standard Go layout for date. Adjust this to the format of your input date.
-	t, err := time.Parse(layout, dto.Date)
-	if err != nil {
-		fmt.Println(err)
-		return model.Booking{}, err
-	}
 
 	return model.Booking{
-		Model:       gorm.Model{ID: uint(dto.BookingId)}, // gorm.Model.ID is of type uint
-		BookingId:   dto.BookingId,
+		//Model:       gorm.Model{ID: uint(dto.BookingId)}, // gorm.Model.ID is of type uint
 		WorkspaceId: dto.WorkspaceId,
 		PersonId:    dto.PersonId,
-		Date:        t,
+		Date:        parseTime(dto.Date),
 	}, nil
+}
+
+func parseTime(date string) time.Time {
+
+	time, err := time.Parse("2006-01-02", date)
+
+	if err != nil {
+		log.Panicln("Parse error: ", err)
+	}
+	return time
+
+}
+
+func MapWorkspacesToDTO(workspaces []model.Workspace) []model.WorkspaceDTO {
+	workspacesDTO := make([]model.WorkspaceDTO, len(workspaces))
+
+	for i, workspace := range workspaces {
+		bookingsDTO := make([]model.BookingDTO, len(workspace.Bookings))
+		for j, booking := range workspace.Bookings {
+			bookingsDTO[j] = model.BookingDTO{
+				BookingId:   int(booking.ID),
+				PersonId:    booking.PersonId,
+				WorkspaceId: booking.WorkspaceId,
+				RoomName:    checkroomID(workspace.RoomId),
+				Date:        booking.Date.Format("2006-01-02"), // Format the date as "YYYY-MM-DD"
+			}
+		}
+
+		workspacesDTO[i] = model.WorkspaceDTO{
+			WorkspaceId:       workspace.WorkspaceId,
+			Name:              workspace.Name,
+			HasDockingStation: workspace.DockingStationPresent,
+			HasAdjustableDesk: workspace.AdjustableDeskPresent,
+			HasTwoScreens:     workspace.NumberOfMonitors > 1,
+			RoomName:          checkroomID(workspace.RoomId),
+			Bookings:          bookingsDTO,
+		}
+	}
+
+	return workspacesDTO
+}
+
+func checkroomID(id int) string {
+
+	switch id {
+	case 1:
+		return "Raum 01"
+	case 2:
+		return "Raum 02"
+	case 3:
+		return "Raum 03"
+	case 4:
+		return "Raum 04"
+	case 5:
+		return "Raum 05"
+	default:
+		return "Raum"
+	}
 }

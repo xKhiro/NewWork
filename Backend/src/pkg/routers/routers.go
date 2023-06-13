@@ -28,17 +28,31 @@ func NewRouter() *Router {
 func (r *Router) GetWorkspaces(w http.ResponseWriter, req *http.Request) {
 
 	log.Println("Router GetWorkspaces")
+
 	params := model.WorkspaceFilter{
 		Date:              req.URL.Query().Get("date"),
-		Booked:            req.URL.Query().Get("booked"),
-		HasDockingStation: req.URL.Query().Get("hasDockingStation"),
-		HasAdjustableDesk: req.URL.Query().Get("hasAdjustableDesk"),
-		HasTwoScreens:     req.URL.Query().Get("hasTwoScreens"),
+		Booked:            parseBool(req.URL.Query().Get("booked")),
+		HasDockingStation: parseBool(req.URL.Query().Get("hasDockingStation")),
+		HasAdjustableDesk: parseBool(req.URL.Query().Get("hasAdjustableDesk")),
+		HasTwoScreens:     parseBool(req.URL.Query().Get("hasTwoScreens")),
 		RoomId:            req.URL.Query().Get("roomId"),
 		WorkspaceId:       req.URL.Query().Get("workspaceId"),
 	}
+
 	workspaces := r.handler.GetWorkspaces(params)
 	json.NewEncoder(w).Encode(workspaces)
+}
+
+func parseBool(boolStr string) bool {
+	if boolStr != "" {
+		booked, err := strconv.ParseBool(boolStr)
+		if err != nil {
+			log.Panicln("Cannot Parse: ", err)
+		}
+		return booked
+	}
+	return false
+
 }
 
 func (r *Router) GetBookings(w http.ResponseWriter, req *http.Request) {
@@ -57,9 +71,13 @@ func (r *Router) CreateBooking(w http.ResponseWriter, req *http.Request) {
 	var booking model.BookingDTO
 	_ = json.NewDecoder(req.Body).Decode(&booking)
 
-	newBooking := r.handler.CreateBooking(personId, booking)
+	error := r.handler.CreateBooking(personId, booking)
 
-	json.NewEncoder(w).Encode(newBooking)
+	if error.Code == 409 {
+		w.WriteHeader(http.StatusConflict)
+	}
+
+	json.NewEncoder(w).Encode(error)
 }
 
 func (r *Router) CancelBooking(w http.ResponseWriter, req *http.Request) {
@@ -74,7 +92,6 @@ func (r *Router) CancelBooking(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = r.handler.CancelBooking(personId, bokkingId)
-	if err != nil {
-		return
-	}
+	w.WriteHeader(http.StatusNoContent)
+
 }

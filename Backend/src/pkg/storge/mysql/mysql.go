@@ -3,9 +3,11 @@ package mysql
 import (
 	"NewWork/pkg/model"
 	"context"
+	"errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"log"
+	"time"
 )
 
 type GormStorage struct {
@@ -32,9 +34,16 @@ func (db *GormStorage) CreateWorkspace(ctx context.Context, workspace *model.Wor
 	return nil
 }
 
-func (db *GormStorage) GetWorkspace(ctx context.Context, workspaceId int) (*model.WorkspaceDTO, error) {
-	// TODO: Implement
-	return nil, nil
+func (db *GormStorage) GetWorkspace(ctx context.Context, workspaceId int) (model.Workspace, error) {
+	var workspace model.Workspace
+
+	err := db.gormClient.Where("WorkspaceId = ?", workspaceId).Find(&workspace).Error
+	if err != nil {
+		log.Panicln("Database Error find GetWorkspaces: ", err)
+		return model.Workspace{}, err
+	}
+
+	return model.Workspace{}, nil
 }
 
 func (db *GormStorage) GetAllWorkspaces(ctx context.Context, filter *model.WorkspaceFilter) ([]model.Workspace, error) {
@@ -54,15 +63,38 @@ func (db *GormStorage) DeleteWorkspace(ctx context.Context, workspaceId int) err
 	return nil
 }
 
-func (db *GormStorage) CreateBooking(ctx context.Context, booking model.Booking) error {
+func (db *GormStorage) CreateBooking(ctx context.Context, booking model.Booking) model.Error {
+	log.Println("CreateBooking")
+	err := db.gormClient.AutoMigrate(&model.Booking{})
 
-	err := db.gormClient.Create(booking).Error
+	var existingBooking model.Booking
+	err = db.gormClient.Where("workspace_id = ? AND date = ?", booking.WorkspaceId, booking.Date).First(&existingBooking).Error
 	if err != nil {
-		log.Panicln("Database Error Create Booking: ", err)
-		return err
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Panicln("Database Error checking for existing booking: ", err)
+			return model.Error{
+				Code:    500,
+				Message: "Database Error",
+			}
+		}
+	} else {
+		log.Println("Booking already exists for the given WorkspaceId and Date.")
+		return model.Error{
+			Code:    409,
+			Message: "Conflict, the workspace is already booked",
+		}
 	}
 
-	return nil
+	err = db.gormClient.Create(&booking).Error
+	if err != nil {
+		log.Panicln("Database Error Create Booking: ", err)
+		return model.Error{
+			Code:    500,
+			Message: "Database Error",
+		}
+	}
+
+	return model.Error{}
 }
 
 func (db *GormStorage) GetBooking(ctx context.Context, bookingId int) (*model.BookingDTO, error) {
@@ -85,6 +117,29 @@ func (db *GormStorage) GetAllBookings(ctx context.Context, personId string) ([]m
 }
 
 func (db *GormStorage) DeleteBooking(ctx context.Context, bookingId int) error {
-	// TODO: Implement
+	var booking model.Booking
+
+	err := db.gormClient.Where("Id = ?", bookingId).First(&booking).Error // Find the booking
+	if err != nil {
+		log.Println("Database Error dont Find booking: ", err)
+		return err
+	}
+	err = db.gormClient.Delete(&booking).Error
+	if err != nil {
+		log.Panicln("Database Error by delete: ", err)
+		return err
+	}
+
 	return nil
+}
+
+func parseTime(date string) time.Time {
+
+	time, err := time.Parse("2006-01-02", date)
+
+	if err != nil {
+		log.Panicln("Parse error: ", err)
+	}
+	return time
+
 }

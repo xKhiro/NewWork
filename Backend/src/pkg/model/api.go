@@ -1,10 +1,10 @@
 package model
 
 type BookingDTO struct {
-	BookingId   int    `json:"bookingId"`
+	BookingId   int    `json:"bookingId,omitempty"`
 	PersonId    string `json:"personId"`
 	WorkspaceId int    `json:"workspaceId"`
-	RoomName    string `json:"roomName"`
+	RoomName    string `json:"roomName,omitempty"`
 	Date        string `json:"date"`
 }
 
@@ -25,10 +25,10 @@ type Error struct {
 
 type WorkspaceFilter struct {
 	Date              string
-	Booked            string
-	HasDockingStation string
-	HasAdjustableDesk string
-	HasTwoScreens     string
+	Booked            bool
+	HasDockingStation bool
+	HasAdjustableDesk bool
+	HasTwoScreens     bool
 	RoomId            string
 	WorkspaceId       string
 }
