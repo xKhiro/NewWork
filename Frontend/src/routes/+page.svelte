@@ -1,29 +1,56 @@
 <script>
   import { showToast } from '../lib/toast';
   import { convertISODateToGerman } from '../lib/dateutils';
-  import { goto } from '$app/navigation';
   import DeleteBookingModal from '../components/DeleteBookingModal.svelte';
   import Toast from '../components/Toast.svelte';
+  import { onMount } from 'svelte';
+  import user from '../lib/user';
 
-  export let data;
-
+  let filteredWorkspaces = [];
   let selectedWorkspace = null;
+
+  onMount(async () => {
+    const json = await fetch('http://localhost:8000/workspaces?booked=true').then((res) => res.json());
+
+    filteredWorkspaces = json
+      .filter((ws) => {
+        return ws.booking !== null && ws.bookings.some((b) => b.personId === $user.personId);
+      })
+      .map(({ hasTwoScreens, hasDockingStation, hasAdjustableDesk, bookings, ...rest }) => {
+        const features = [];
+
+        if (hasTwoScreens) {
+          features.push('2 Bildschirme');
+        }
+        if (hasDockingStation) {
+          features.push('Docking Station');
+        }
+        if (hasAdjustableDesk) {
+          features.push('Schreibtisch höhenverstellbar');
+        }
+
+        const booking = bookings.find((b) => b.personId === $user.personId);
+
+        return {
+          ...rest,
+          features: features.join(', '),
+          booking: booking,
+        };
+      });
+  });
 
   function handleRowSelection(ws) {
     selectedWorkspace = selectedWorkspace !== null && selectedWorkspace.workspaceId === ws.workspaceId ? null : ws;
   }
 
   async function deleteBooking(ws) {
-    // TODO: Add dynamic personId, Add error handling
-    await fetch('http://localhost:8000/users/1/bookings/' + ws.booking.bookingId, {
+    // TODO: Add error handling
+    await fetch(`http://localhost:8000/users/${$user.personId}/bookings/${ws.booking.bookingId}`, {
       method: 'DELETE',
     });
 
     // Remove selection
     selectedWorkspace = null;
-
-    // Hack to trigger load function
-    goto('/');
 
     showToast('Stornierung erfolgreich');
   }
@@ -44,7 +71,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each data.filteredWorkspaces as ws, index}
+      {#each filteredWorkspaces as ws, index}
         <tr
           on:click={() => handleRowSelection(ws)}
           class:table-active={selectedWorkspace !== null && selectedWorkspace.workspaceId === ws.workspaceId}>
