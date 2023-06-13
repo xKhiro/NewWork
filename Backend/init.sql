@@ -1,7 +1,7 @@
 CREATE
-DATABASE IF NOT EXISTS workspace;
-USE
-workspace;
+DATABASE IF NOT EXISTS workspace_booking;
+
+USE workspace_booking;
 
 CREATE TABLE `rooms`
 (
@@ -17,7 +17,6 @@ CREATE TABLE `workspaces`
     `Name`                  VARCHAR(50) NOT NULL,
     `DockingStationPresent` TINYINT(1) DEFAULT 0,
     `AdjustableDeskPresent` TINYINT(1) DEFAULT 0,
-    `NumberOfMonitors`      INT,
     `NumberOfMonitors`      INT DEFAULT 1,
     FOREIGN KEY (`RoomId`) REFERENCES `rooms` (`RoomId`)
 );
