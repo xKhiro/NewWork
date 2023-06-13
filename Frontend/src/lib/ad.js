@@ -13,6 +13,10 @@ const users = [
   },
 ];
 
+export function getName(personId) {
+  return users.find((u) => u.personId == personId).name;
+}
+
 export function getUser(username, password) {
   return users.find((u) => u.name == username && u.password == password);
 }

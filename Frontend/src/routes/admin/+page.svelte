@@ -4,6 +4,7 @@
   import Toast from '../../components/Toast.svelte';
   import { showToast } from '../../lib/toast';
   import { convertGermanDateToISO } from '../../lib/dateutils';
+  import { getName } from '../../lib/ad';
 
   let selectedDate;
   let selectedWorkspace = null;
@@ -62,7 +63,6 @@
       });
   }
 
-  //TODO: Add error handling
   async function deleteBooking(b) {
     await fetch(`http://localhost:8000/users/${b.personId}/bookings/${b.bookingId}`, {
       method: 'DELETE',
@@ -70,6 +70,8 @@
 
     // Remove selection
     selectedWorkspace = null;
+
+    filteredWorkspaces = filteredWorkspaces.filter((fw) => fw.bookingId !== b.bookingId);
 
     showToast('Stornierung erfolgreich');
   }
@@ -156,7 +158,7 @@
                 <td>{ws.roomName}</td>
                 <td>{ws.name}</td>
                 <td>{ws.features}</td>
-                <td>{b.personId}</td>
+                <td>{getName(b.personId)}</td>
               </tr>
             {/each}
           {/if}

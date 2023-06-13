@@ -8,6 +8,7 @@
   let filteredWorkspaces = [];
   let selectedDate;
   let selectedWorkspace = null;
+  let isError = false;
 
   function handleRowSelection(ws) {
     selectedWorkspace = selectedWorkspace !== null && selectedWorkspace.workspaceId === ws.workspaceId ? null : ws;
@@ -61,46 +62,37 @@
   }
 
   async function createBooking(ws) {
-    try {
-      //TODO: Add personId
-      const res = await fetch(`http://localhost:8000/users/${$user.personId}/bookings`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          personId: '1',
-          workspaceId: ws.workspaceId,
-          roomName: ws.roomName,
-          date: ws.date,
-        }),
-      });
-
-      if (res.status === 409) {
-        // TODO: Handle Booking already made by other user
-      }
-
-      if (!res.ok) {
-        throw new Error('Bad response', {
-          case: { res },
-        });
-      }
-    } catch (err) {
-      throw err;
-    }
+    const res = await fetch(`http://localhost:8000/users/${$user.personId}/bookings`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personId: $user.personId,
+        workspaceId: ws.workspaceId,
+        roomName: ws.roomName,
+        date: ws.date,
+      }),
+    });
 
     // Remove selection
     selectedWorkspace = null;
 
-    showToast('Buchung erfolgreich');
+    if (res.status === 409) {
+      isError = true;
+      showToast('Arbeitsplatz bereits gebucht');
+      isError = false;
+      return;
+    }
 
-    //TODO: Refresh data
-    //goto('/');
+    filteredWorkspaces = filteredWorkspaces.filter((fw) => fw.workspaceId !== ws.workspaceId);
+
+    showToast('Buchung erfolgreich');
   }
 </script>
 
-<Toast />
+<Toast isError />
 
 <form on:submit|preventDefault={getWorkspaces} class="mt-4">
   <div class="row row-cols-4">

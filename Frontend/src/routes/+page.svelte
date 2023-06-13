@@ -44,13 +44,14 @@
   }
 
   async function deleteBooking(ws) {
-    // TODO: Add error handling
     await fetch(`http://localhost:8000/users/${$user.personId}/bookings/${ws.booking.bookingId}`, {
       method: 'DELETE',
     });
 
     // Remove selection
     selectedWorkspace = null;
+
+    filteredWorkspaces = filteredWorkspaces.filter((fw) => fw.workspaceId !== ws.workspaceId);
 
     showToast('Stornierung erfolgreich');
   }
