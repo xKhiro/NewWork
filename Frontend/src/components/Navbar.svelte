@@ -8,7 +8,7 @@
   }
 </script>
 
-<nav class="navbar navbar-expand-lg bg-body-tertiary shadow-sm">
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
   <div class="container-fluid">
     <a class="navbar-brand fs-4 fw-bold" href="/">NEWWORK</a>
     <button

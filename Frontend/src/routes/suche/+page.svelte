@@ -76,9 +76,7 @@
       }),
     });
 
-    // Remove selection
-    selectedWorkspace = null;
-
+    //TODO: Fix color
     if (res.status === 409) {
       isError = true;
       showToast('Arbeitsplatz bereits gebucht');
@@ -95,23 +93,23 @@
 <Toast isError />
 
 <form on:submit|preventDefault={getWorkspaces} class="mt-4">
-  <div class="row row-cols-4">
-    <div class="col-2">
+  <div class="row row-cols-3">
+    <div class="col-2" style="min-width: 13rem;">
       <DatePicker bind:selectedDate />
     </div>
-    <div class="col-2">
+    <div class="col-2" style="min-width: 13rem;">
       <select name="filterArbeitsplaetze" class="form-select">
         <option selected>Alle Arbeitsplätze</option>
-        <option value="1">01</option>
-        <option value="2">02</option>
-        <option value="3">03</option>
-        <option value="4">04</option>
-        <option value="5">05</option>
-        <option value="6">06</option>
-        <option value="7">07</option>
-        <option value="8">08</option>
-        <option value="9">09</option>
-        <option value="10">10</option>
+        <option value="1">Arbeitsplatz 01</option>
+        <option value="2">Arbeitsplatz 02</option>
+        <option value="3">Arbeitsplatz 03</option>
+        <option value="4">Arbeitsplatz 04</option>
+        <option value="5">Arbeitsplatz 05</option>
+        <option value="6">Arbeitsplatz 06</option>
+        <option value="7">Arbeitsplatz 07</option>
+        <option value="8">Arbeitsplatz 08</option>
+        <option value="9">Arbeitsplatz 09</option>
+        <option value="10">Arbeitsplatz 10</option>
       </select>
     </div>
     <div class="col-auto row mt-2 px-4">
@@ -126,17 +124,17 @@
     </div>
   </div>
   <div class="row row-cols-3 mt-3">
-    <div class="col-2">
+    <div class="col-2" style="min-width: 13rem;">
       <select name="filterRaeume" class="form-select">
         <option selected>Alle Räume</option>
-        <option value="1">01</option>
-        <option value="2">02</option>
-        <option value="3">03</option>
-        <option value="4">04</option>
-        <option value="5">05</option>
+        <option value="1">Raum 01</option>
+        <option value="2">Raum 02</option>
+        <option value="3">Raum 03</option>
+        <option value="4">Raum 04</option>
+        <option value="5">Raum 05</option>
       </select>
     </div>
-    <div class="col-2">
+    <div class="col-2" style="min-width: 13rem;">
       <select name="filterAusstattung" class="form-select">
         <option selected>Alle Ausstattung</option>
         <option value="1">Schreibtisch höhenverstellbar</option>
@@ -144,8 +142,8 @@
         <option value="3">2 Bildschirme</option>
       </select>
     </div>
-    <div>
-      <button type="submit" class="btn btn-secondary col-3">Suchen</button>
+    <div class="col-2">
+      <button type="submit" class="btn btn-secondary col-3" style="min-width: 6rem;">Suchen</button>
     </div>
   </div>
 </form>
@@ -167,8 +165,8 @@
             on:click={() => handleRowSelection(ws)}
             class:table-active={selectedWorkspace !== null && selectedWorkspace.workspaceId === ws.workspaceId}>
             <th scope="row">{index + 1}</th>
-            <td>{ws.name}</td>
             <td>{ws.roomName}</td>
+            <td>{ws.name}</td>
             <td>{ws.features}</td>
           </tr>
         {:else}
@@ -177,9 +175,10 @@
       </tbody>
     </table>
 
-    <div class="d-flex justify-content-end">
+    <div class="d-flex justify-content-end mb-5">
       <button
         type="button"
+        style="min-width: 6rem;"
         class="btn btn-primary"
         class:disabled={selectedWorkspace === null}
         on:click={() => createBooking(selectedWorkspace)}>Buchen</button>
