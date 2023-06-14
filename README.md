@@ -29,9 +29,9 @@ Navigieren Sie in der Konsole zum Projektverzeichnis `Frontend` und geben Sie de
 npm install
 ```
 
-## Ausführen des Projekts
 
-### Starten der Datenbank
+
+## Starten der Datenbank
 Voraussetzung ist Docker installiert(https://www.docker.com/products/docker-desktop/) zu haben und gestartet. 
 ```shell
 cd Backend/
@@ -43,7 +43,9 @@ docker-compose up
 http://localhost:8080/ -> (root/root)
 
 
-Navigieren Sie in der Konsole zum Projektverzeichnis `Backend` und führen Sie den folgenden Befehl aus, um das Projekt zu starten:
+
+## Ausführen des Projekts
+Navigieren Sie in der Konsole zum Projektverzeichnis `Backend/src/cmd/bookingsystem` und führen Sie den folgenden Befehl aus, um das Projekt zu starten:
 
 ```shell
 cd Backend/src/cmd/bookingsystem

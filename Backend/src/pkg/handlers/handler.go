@@ -20,6 +20,7 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) GetWorkspaces(params model.WorkspaceFilter) []model.WorkspaceDTO {
+
 	log.Print("GetWorkspaces with params: ", params)
 
 	workspaces, err := h.storage.GetAllWorkspaces(context.TODO(), &params)
@@ -40,10 +41,10 @@ func (h *Handler) GetWorkspaces(params model.WorkspaceFilter) []model.WorkspaceD
 		unfiltered[i] = workspaceDto
 	}
 
-	filterWorkspaces := FilterWorkspaces(unfiltered, params)
+	workspacesDTO := FilterWorkspaces(unfiltered, params)
 
-	log.Println("Workspace: ", filterWorkspaces)
-	return filterWorkspaces
+	log.Println("Workspace: ", workspacesDTO)
+	return workspacesDTO
 }
 
 func (h *Handler) GetBookings(personId string) []model.BookingDTO {
@@ -94,8 +95,7 @@ func (h *Handler) CancelBooking(personId string, bookingId int) error {
 
 func (h *Handler) mapBookingsToBookingDTO(bookings []model.Booking) []model.BookingDTO {
 
-	var bookingsDTO []model.BookingDTO
-
+	bookingsDTO := make([]model.BookingDTO, 0)
 	for _, booking := range bookings {
 		workspace, err := h.storage.GetWorkspace(context.Background(), booking.WorkspaceId)
 		log.Println("Workspace for booking: ", workspace)
@@ -187,7 +187,7 @@ func checkroomID(id int) string {
 }
 
 func FilterWorkspaces(workspaces []model.WorkspaceDTO, filter model.WorkspaceFilter) []model.WorkspaceDTO {
-	var filtered []model.WorkspaceDTO
+	filtered := make([]model.WorkspaceDTO, 0)
 
 	for _, workspace := range workspaces {
 		if filter.Booked {
