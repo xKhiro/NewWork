@@ -75,6 +75,12 @@ func (r *Router) CreateBooking(w http.ResponseWriter, req *http.Request) {
 
 	if error.Code == 409 {
 		w.WriteHeader(http.StatusConflict)
+	} else if error.Code == 429 {
+		w.WriteHeader(http.StatusTooManyRequests)
+	} else if error.Code == 500 {
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		w.WriteHeader(http.StatusCreated)
 	}
 
 	json.NewEncoder(w).Encode(error)

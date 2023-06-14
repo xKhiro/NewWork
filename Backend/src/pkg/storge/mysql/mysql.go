@@ -100,6 +100,43 @@ func (db *GormStorage) CreateBooking(ctx context.Context, booking model.Booking)
 		}
 	}
 
+	// Überprüfen, ob der Benutzer bereits eine Buchung für das angegebene Datum hat
+	var userBooking model.Booking
+	err = db.gormClient.Where("person_Id = ? AND date = ?", booking.PersonId, booking.Date).First(&userBooking).Error
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Panicln("Database Error checking for existing user booking: ", err)
+			return model.Error{
+				Code:    500,
+				Message: "Database Error",
+			}
+		}
+	} else {
+		log.Println("Booking already exists for the given PersonId and Date.")
+		return model.Error{
+			Code:    429,
+			Message: "Too many requests, the user has already made a booking for this date",
+		}
+	}
+
+	// Überprüfen, ob der Benutzer bereits die maximale Anzahl von Buchungen erreicht hat
+	var userBookingsCount int64
+	err = db.gormClient.Model(&model.Booking{}).Where("person_Id = ?", booking.PersonId).Count(&userBookingsCount).Error
+	if err != nil {
+		log.Panicln("Database Error checking for existing user bookings count: ", err)
+		return model.Error{
+			Code:    500,
+			Message: "Database Error",
+		}
+	}
+	if userBookingsCount >= 15 {
+		log.Println("The user has already made the maximum number of bookings.")
+		return model.Error{
+			Code:    429,
+			Message: "Too many requests, the user has already made the maximum number of bookings",
+		}
+	}
+
 	err = db.gormClient.Create(&booking).Error
 	if err != nil {
 		log.Panicln("Database Error Create Booking: ", err)
