@@ -4,10 +4,14 @@
 
   onMount(() => {
     const elem = document.querySelector('input[name="datePicker"]');
+    const minDate = new Date();
+    const maxDate = minDate.setDate(minDate.getDate() + 14);
+
     const datepicker = new Datepicker(elem, {
       buttonClass: 'btn',
-      allowOneSidedRange: true,
       format: 'dd.mm.yyyy',
+      minDate: new Date(),
+      maxDate: maxDate,
     });
   });
 
