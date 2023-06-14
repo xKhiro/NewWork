@@ -76,21 +76,26 @@
       }),
     });
 
-    //TODO: Fix color
     if (res.status === 409) {
       isError = true;
       showToast('Arbeitsplatz bereits gebucht');
-      isError = false;
+      return;
+    }
+
+    if (res.status === 429) {
+      isError = true;
+      showToast('Maximale Anzahl an Buchungen überschritten');
       return;
     }
 
     filteredWorkspaces = filteredWorkspaces.filter((fw) => fw.workspaceId !== ws.workspaceId);
 
+    isError = false;
     showToast('Buchung erfolgreich');
   }
 </script>
 
-<Toast isError />
+<Toast {isError} />
 
 <form on:submit|preventDefault={getWorkspaces} class="mt-4">
   <div class="row row-cols-3">
