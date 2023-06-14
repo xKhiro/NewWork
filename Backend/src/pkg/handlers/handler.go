@@ -20,18 +20,30 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) GetWorkspaces(params model.WorkspaceFilter) []model.WorkspaceDTO {
-	log.Print("GetWorkspaces with params")
+	log.Print("GetWorkspaces with params: ", params)
 
 	workspaces, err := h.storage.GetAllWorkspaces(context.TODO(), &params)
 	if err != nil {
 		return nil
 	}
 
-	log.Println("Workspaces: ", workspaces)
+	unfiltered := MapWorkspacesToDTO(workspaces)
 
-	dto := MapWorkspacesToDTO(workspaces)
+	for i, workspaceDto := range unfiltered {
 
-	return dto
+		bookings, err := h.storage.GetBookingsWithWorkspaceId(context.Background(), workspaceDto.WorkspaceId)
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		workspaceDto.Bookings = h.mapBookingsToBookingDTO(bookings)
+		unfiltered[i] = workspaceDto
+	}
+
+	filterWorkspaces := FilterWorkspaces(unfiltered, params)
+
+	log.Println("Workspace: ", filterWorkspaces)
+	return filterWorkspaces
 }
 
 func (h *Handler) GetBookings(personId string) []model.BookingDTO {
@@ -86,9 +98,11 @@ func (h *Handler) mapBookingsToBookingDTO(bookings []model.Booking) []model.Book
 
 	for _, booking := range bookings {
 		workspace, err := h.storage.GetWorkspace(context.Background(), booking.WorkspaceId)
+		log.Println("Workspace for booking: ", workspace)
 		if err != nil {
 			log.Panicln("Get Workspace Error")
 		}
+
 		bookingDTO := model.BookingDTO{
 			BookingId:   int(booking.ID),
 			PersonId:    booking.PersonId,
@@ -141,11 +155,11 @@ func MapWorkspacesToDTO(workspaces []model.Workspace) []model.WorkspaceDTO {
 		}
 
 		workspacesDTO[i] = model.WorkspaceDTO{
-			WorkspaceId:       workspace.WorkspaceId,
+			WorkspaceId:       int(workspace.ID),
 			Name:              workspace.Name,
 			HasDockingStation: workspace.DockingStationPresent,
 			HasAdjustableDesk: workspace.AdjustableDeskPresent,
-			HasTwoScreens:     workspace.NumberOfMonitors > 1,
+			HasTwoScreens:     workspace.HasTwoScreens,
 			RoomName:          checkroomID(workspace.RoomId),
 			Bookings:          bookingsDTO,
 		}
@@ -170,4 +184,41 @@ func checkroomID(id int) string {
 	default:
 		return "Raum"
 	}
+}
+
+func FilterWorkspaces(workspaces []model.WorkspaceDTO, filter model.WorkspaceFilter) []model.WorkspaceDTO {
+	var filtered []model.WorkspaceDTO
+
+	for _, workspace := range workspaces {
+		if filter.Booked {
+			if filter.Date != "" {
+
+				for _, booking := range workspace.Bookings {
+					if booking.Date == filter.Date {
+						filtered = append(filtered, workspace)
+						break
+					}
+				}
+			} else {
+
+				if len(workspace.Bookings) > 0 {
+					filtered = append(filtered, workspace)
+				}
+			}
+		} else if filter.Date != "" {
+
+			hasBooking := false
+			for _, booking := range workspace.Bookings {
+				if booking.Date == filter.Date {
+					hasBooking = true
+					break
+				}
+			}
+			if !hasBooking {
+				filtered = append(filtered, workspace)
+			}
+		}
+	}
+
+	return filtered
 }

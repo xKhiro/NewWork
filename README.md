@@ -17,6 +17,7 @@ ToDo
 Um das Gorilla Mux Paket zu installieren, öffnen Sie die Konsole und geben Sie den folgenden Befehl ein:
 
 ```shell
+cd Backend/src/
 go get -u github.com/gorilla/mux
 ```
 
@@ -30,9 +31,22 @@ npm install
 
 ## Ausführen des Projekts
 
+### Starten der Datenbank
+Voraussetzung ist Docker installiert(https://www.docker.com/products/docker-desktop/) zu haben und gestartet. 
+```shell
+cd Backend/
+docker-compose up 
+```
+
+### Grafische Anzeige der Datenbank
+
+http://localhost:8080/ -> (root/root)
+
+
 Navigieren Sie in der Konsole zum Projektverzeichnis `Backend` und führen Sie den folgenden Befehl aus, um das Projekt zu starten:
 
 ```shell
+cd Backend/src/cmd/bookingsystem
 go run main.go
 ```
 

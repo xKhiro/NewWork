@@ -6,8 +6,8 @@ import (
 	"errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
-	"time"
 )
 
 type GormStorage struct {
@@ -29,15 +29,10 @@ func NewGormStorage() *GormStorage {
 	}
 }
 
-func (db *GormStorage) CreateWorkspace(ctx context.Context, workspace *model.WorkspaceDTO) error {
-	// TODO: Implement
-	return nil
-}
-
 func (db *GormStorage) GetWorkspace(ctx context.Context, workspaceId int) (model.Workspace, error) {
 	var workspace model.Workspace
 
-	err := db.gormClient.Where("WorkspaceId = ?", workspaceId).Find(&workspace).Error
+	err := db.gormClient.Where("Id = ?", workspaceId).Find(&workspace).Error
 	if err != nil {
 		log.Panicln("Database Error find GetWorkspaces: ", err)
 		return model.Workspace{}, err
@@ -49,7 +44,7 @@ func (db *GormStorage) GetWorkspace(ctx context.Context, workspaceId int) (model
 func (db *GormStorage) GetAllWorkspaces(ctx context.Context, filter *model.WorkspaceFilter) ([]model.Workspace, error) {
 	var workspace []model.Workspace
 
-	err := db.gormClient.Find(&workspace).Error
+	err := db.gormClient.Where(createQuery(filter)).Find(&workspace).Error
 	if err != nil {
 		log.Panicln("Database Error find GetAllWorkspaces: ", err)
 		return nil, err
@@ -58,9 +53,29 @@ func (db *GormStorage) GetAllWorkspaces(ctx context.Context, filter *model.Works
 	return workspace, nil
 }
 
-func (db *GormStorage) DeleteWorkspace(ctx context.Context, workspaceId int) error {
-	// TODO: Implement
-	return nil
+func createQuery(filter *model.WorkspaceFilter) clause.Expression {
+	expr := clause.Where{}
+
+	if filter.HasDockingStation {
+		expr = clause.Where{Exprs: append(expr.Exprs, clause.Eq{Column: "docking_station_present", Value: filter.HasDockingStation})}
+	}
+	if filter.HasAdjustableDesk {
+		expr = clause.Where{Exprs: append(expr.Exprs, clause.Eq{Column: "adjustable_desk_present", Value: filter.HasAdjustableDesk})}
+	}
+	if filter.HasTwoScreens {
+		expr = clause.Where{Exprs: append(expr.Exprs, clause.Eq{Column: "has_two_screens", Value: filter.HasTwoScreens})}
+	}
+	if filter.RoomId != "" {
+		expr = clause.Where{Exprs: append(expr.Exprs, clause.Eq{Column: "room_Id", Value: filter.RoomId})}
+	}
+	if filter.WorkspaceId != "" {
+		expr = clause.Where{Exprs: append(expr.Exprs, clause.Eq{Column: "name", Value: "Arbeitsplatz 0" + filter.WorkspaceId})}
+	}
+	if len(expr.Exprs) == 0 {
+		expr.Exprs = append(expr.Exprs, clause.Expr{SQL: "1 = 1"})
+	}
+
+	return expr
 }
 
 func (db *GormStorage) CreateBooking(ctx context.Context, booking model.Booking) model.Error {
@@ -97,9 +112,17 @@ func (db *GormStorage) CreateBooking(ctx context.Context, booking model.Booking)
 	return model.Error{}
 }
 
-func (db *GormStorage) GetBooking(ctx context.Context, bookingId int) (*model.BookingDTO, error) {
-	// TODO: Implement
-	return nil, nil
+func (db *GormStorage) GetBookingsWithWorkspaceId(ctx context.Context, workspaceId int) ([]model.Booking, error) {
+	var bookings []model.Booking
+	log.Println("GetBookingsWithWorkspaceId: ", workspaceId)
+
+	err := db.gormClient.Where("workspace_Id = ?", workspaceId).Find(&bookings).Error
+	if err != nil {
+		log.Panicln("Database Error find GetAllWorkspaces: ", err)
+		return nil, err
+	}
+
+	return bookings, nil
 }
 
 func (db *GormStorage) GetAllBookings(ctx context.Context, personId string) ([]model.Booking, error) {
@@ -111,7 +134,6 @@ func (db *GormStorage) GetAllBookings(ctx context.Context, personId string) ([]m
 		log.Panicln("Database Error find GetAllWorkspaces: ", err)
 		return nil, err
 	}
-	log.Println("tttt: ", bookings)
 
 	return bookings, nil
 }
@@ -131,15 +153,4 @@ func (db *GormStorage) DeleteBooking(ctx context.Context, bookingId int) error {
 	}
 
 	return nil
-}
-
-func parseTime(date string) time.Time {
-
-	time, err := time.Parse("2006-01-02", date)
-
-	if err != nil {
-		log.Panicln("Parse error: ", err)
-	}
-	return time
-
 }
