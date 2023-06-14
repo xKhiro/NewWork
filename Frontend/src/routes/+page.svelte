@@ -36,6 +36,12 @@
           features: features.join(', '),
           booking: booking,
         };
+      })
+      .sort((a, b) => {
+        let aDate = new Date(a.booking.date).getTime();
+        let bDate = new Date(b.booking.date).getTime();
+
+        return aDate - bDate;
       });
   });
 

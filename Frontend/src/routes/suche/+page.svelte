@@ -15,6 +15,9 @@
   }
 
   async function getWorkspaces(e) {
+    // Remove selection
+    selectedWorkspace = null;
+
     const formData = new FormData(e.target);
 
     const filter = {};
@@ -79,19 +82,15 @@
     if (res.status === 409) {
       isError = true;
       showToast('Arbeitsplatz bereits gebucht');
-      return;
-    }
-
-    if (res.status === 429) {
+    } else if (res.status === 429) {
       isError = true;
       showToast('Maximale Anzahl an Buchungen überschritten');
-      return;
+    } else {
+      filteredWorkspaces = filteredWorkspaces.filter((fw) => fw.workspaceId !== ws.workspaceId);
+
+      isError = false;
+      showToast('Buchung erfolgreich');
     }
-
-    filteredWorkspaces = filteredWorkspaces.filter((fw) => fw.workspaceId !== ws.workspaceId);
-
-    isError = false;
-    showToast('Buchung erfolgreich');
   }
 </script>
 
