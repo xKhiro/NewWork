@@ -5,10 +5,19 @@
   import { showToast } from '../../lib/toast';
   import { convertGermanDateToISO } from '../../lib/dateutils';
   import { getName } from '../../lib/ad';
+  import { onMount } from 'svelte';
+  import user from '../../lib/user';
+  import { goto } from '$app/navigation';
 
   let selectedDate;
   let selectedWorkspace = null;
   let filteredWorkspaces = [];
+
+  onMount(() => {
+    if ($user === null || $user.role !== 'admin') {
+      goto('/');
+    }
+  });
 
   function handleRowSelection(b) {
     selectedWorkspace = selectedWorkspace !== null && selectedWorkspace.bookingId === b.bookingId ? null : b;
