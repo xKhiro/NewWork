@@ -38,7 +38,7 @@ func (db *GormStorage) GetWorkspace(ctx context.Context, workspaceId int) (model
 		return model.Workspace{}, err
 	}
 
-	return model.Workspace{}, nil
+	return workspace, nil
 }
 
 func (db *GormStorage) GetAllWorkspaces(ctx context.Context, filter *model.WorkspaceFilter) ([]model.Workspace, error) {
@@ -166,7 +166,7 @@ func (db *GormStorage) GetAllBookings(ctx context.Context, personId string) ([]m
 
 	var bookings []model.Booking
 
-	err := db.gormClient.Where("PersonId = ?", personId).Find(&bookings).Error
+	err := db.gormClient.Where("person_Id = ?", personId).Find(&bookings).Error
 	if err != nil {
 		log.Panicln("Database Error find GetAllWorkspaces: ", err)
 		return nil, err
