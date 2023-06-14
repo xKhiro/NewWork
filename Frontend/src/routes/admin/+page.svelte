@@ -4,7 +4,7 @@
   import Toast from '../../components/Toast.svelte';
   import { showToast } from '../../lib/toast';
   import { convertGermanDateToISO } from '../../lib/dateutils';
-  import { getName } from '../../lib/ad';
+  import { getName, getAllNames } from '../../lib/ad';
   import { onMount } from 'svelte';
   import user from '../../lib/user';
   import { goto } from '$app/navigation';
@@ -46,11 +46,24 @@
       queryParams.append('roomId', parseInt(filter['filterRaeume']));
     }
 
+    let mitarbeiterName = null;
+    if (!filter['filterMitarbeiter'].includes('Alle')) {
+      mitarbeiterName = filter['filterMitarbeiter'];
+    }
+
     const json = await fetch('http://localhost:8000/workspaces?booked=true&' + queryParams).then((res) => res.json());
 
     filteredWorkspaces = json
       .filter((ws) => {
-        return ws.booking !== null;
+        if (ws.bookings === null) {
+          return false;
+        }
+
+        if (mitarbeiterName !== null) {
+          return ws.bookings.some((b) => getName(b.personId) === mitarbeiterName);
+        }
+
+        return true;
       })
       .map(({ hasTwoScreens, hasDockingStation, hasAdjustableDesk, ...rest }) => {
         const features = [];
@@ -112,11 +125,9 @@
     <div class="col-2" style="min-width: 13rem;">
       <select name="filterMitarbeiter" class="form-select">
         <option selected>Alle Mitarbeiter</option>
-        <option value="1">admin</option>
-        <option value="2">user</option>
-        <option value="3">user2</option>
-        <option value="4">user3</option>
-        <option value="5">user4</option>
+        {#each getAllNames() as un}
+          <option value={un}>{un}</option>
+        {/each}
       </select>
     </div>
   </div>

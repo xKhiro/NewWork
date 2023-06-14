@@ -17,6 +17,10 @@ export function getName(personId) {
   return users.find((u) => u.personId == personId).name;
 }
 
+export function getAllNames() {
+  return users.map((u) => u.name);
+}
+
 export function getUser(username, password) {
   return users.find((u) => u.name == username && u.password == password);
 }
