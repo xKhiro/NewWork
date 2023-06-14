@@ -91,6 +91,7 @@
   <div class="d-flex justify-content-end">
     <button
       type="button"
+      style="min-width: 6rem;"
       data-bs-toggle="modal"
       data-bs-target="#deleteModal"
       class="btn btn-danger"
